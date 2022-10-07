@@ -9,3 +9,6 @@ out/
 
 # Dotenv file
 .env
+
+# DS Store
+.DS_Store
