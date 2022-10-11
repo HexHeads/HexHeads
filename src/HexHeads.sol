@@ -76,15 +76,6 @@ contract HexHeads is IERC721E, IERC721  {
       uint256 trait_id
     );
 
-    // TODO Remove
-    function tokenTraits(uint256 id) public virtual {
-        address originalOwner = originalOwnerOf(id);
-        uint256[6] memory traits_ = _addressToTraits(originalOwner);
-        for (uint256 i = 0; i < 6; i++) {
-            emit ETrait(traits_[i]);
-        }
-    }
-
     function tokenURI(uint256 id) public view virtual returns (string memory) {
 
         address originalOwner = originalOwnerOf(id);
@@ -95,8 +86,10 @@ contract HexHeads is IERC721E, IERC721  {
             '"name": "HexHead #', id.toString(), '",',
             '"external_url": "https://hexheads.xyz",',
             '"description": "A token you already own",',
-            '"animation_url": "https://erc721wb.github.io?address=', originalOwner.toHexString(), '",',
+            '"animation_url": "https://hexheads.xyz/image.html?address=', originalOwner.toHexString(), '",',
             '"attributes": [',
+                '{"trait_type": "Background",',
+                '"value": "', uint256(uint160(bytes20(0x3A205ECf286bBe11460638aCe47D501A53fB91C0) >> 136)).toColor(),'"},',
                 '{"trait_type": "Bubble Color",',
                 '"value": "', _traits[0][traits[0]],'"},',
                 '{"trait_type": "Bubble",',
@@ -225,7 +218,7 @@ contract HexHeads is IERC721E, IERC721  {
 
     //// INTERNALS ////
 
-    function _addressToTraits(address addr) internal view returns(uint256[6] memory) {
+    function _addressToTraits(address addr) internal pure returns(uint256[6] memory) {
         bytes32 buffer = bytes32(bytes20(addr));
         uint256 displacement = uint256(buffer << 144 >> 240);
 

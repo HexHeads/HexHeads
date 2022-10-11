@@ -52,6 +52,18 @@ library Strings {
         return string(buffer);
     }
 
+    function toColor(uint256 value) internal pure returns (string memory) {
+        bytes memory buffer = new bytes(7);
+        buffer[0] = "#";
+
+        for(uint256 j = 6; j > 0; j--) {
+            buffer[j] = _SYMBOLS[value & 0xf];
+            value >>= 4;
+        }
+
+        return string(buffer);
+    }
+
     /**
      * @dev Converts an `address` with fixed length of 20 bytes to its not checksummed ASCII `string` hexadecimal representation.
      */
