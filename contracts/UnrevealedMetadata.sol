@@ -10,8 +10,9 @@ contract UnrevealedMetadata is IMetadata {
     using Strings for uint256;
 
     //// STORAGE ////
-    /// PUBLIC ///
-    INameRegistry nameRegistry;
+
+    /// PUBLIC IMMUTABLE ///
+    INameRegistry immutable public nameRegistry;
 
     //// CONSTRUCTOR ////
     constructor(INameRegistry _nameRegistry) {
@@ -29,10 +30,9 @@ contract UnrevealedMetadata is IMetadata {
             '{',
             '"name": "', name, '"',
             ', "external_url": "https://hexheads.xyz"',
-            ', "description": "An Unrevealed HexHead without a name"',
-            ', "image": "https://hexheads.xyz/generator?id=', id.toString(), '"',
-            ', "attributes": [{"trait_type": "Name", "value": "', name, '"}, ',
-                               '{"trait_type": "Prime Level", "value": "', primeLevel.toString(), '"}]'
+            ', "description": "An Unrevealed HexHead"',
+            ', "image": "https://raw.githubusercontent.com/k0rean-rand0m/img/main/question.png"',
+            ', "attributes": [{"trait_type": "Name", "value": "', name, '"}]',
             '}'
         );
 
