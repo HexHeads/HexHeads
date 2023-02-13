@@ -12,12 +12,14 @@ function addressToId(address) {
   return BigInt(address).toString()
 }
 
-function checkMetadata(encoded, name, id, level) {
-  // console.log()
+function checkMetadata(encoded, name, id, level, dbg=false) {
   const metadata = JSON.parse(new Buffer.from(encoded.slice(29), 'base64').toString('ascii'));
-  return metadata.name === name &&
+  const correct = metadata.name === name &&
          metadata.image === `https://raw.githubusercontent.com/k0rean-rand0m/img/main/question.png` &&
          metadata.attributes[0].value === name
+
+  if (dbg) console.log(metadata, correct)
+  return correct
 }
 
 describe("HexHeads", function () {
@@ -86,7 +88,13 @@ describe("HexHeads", function () {
     await (await hhu.setOperator(hho.address)).wait()
     await (await hhir.setOperator(hho.address)).wait()
 
-    console.log(gasUsed.toString())
+    console.log("Gas used", gasUsed.toString())
+    console.log("Name Registry", hhnr.address)
+    console.log("HexHeads", hh.address)
+    console.log("HexHeads Prime", hhp.address)
+    console.log("HexHeads Upgrade", hhu.address)
+    console.log("Identicon Registry", hhir.address)
+    console.log("Operator", hho.address)
   })
 
   describe("Main tests", function () {
@@ -94,21 +102,31 @@ describe("HexHeads", function () {
     //   console.log(await hhm2._addressToTraits("0xA105440e9B0C5A5420954746A9d98c9F7C6580F8"))
     // })
 
-    it("Should check claim", async function () {
-      // await(await hh.mint("0x0")).wait();
-      //
-      // expect(await hh.balanceOf(addresses[0])).to.equal(1);
-      // expect((await hh.ownerOf(addressToId(addresses[0]))).toLowerCase()).to.equal(addresses[0]);
-      // expect(await hhnr.name(addressToId(addresses[0]))).to.equal("0x0");
-      // let metadata = await hh.tokenURI(addressToId(addresses[0]));
-      // expect(checkMetadata(metadata, "0x0", addressToId(addresses[0]), 0)).to.equal(true);
-      //
-      // await(await hh.connect(signers[1]).mint("0x1")).wait();
-      // expect(await hh.balanceOf(addresses[1])).to.equal(1);
-      // expect((await hh.ownerOf(addressToId(addresses[1]))).toLowerCase()).to.equal(addresses[1]);
-      // expect(await hhnr.name(addressToId(addresses[1]))).to.equal("0x1");
-      // metadata = await hh.tokenURI(addressToId(addresses[1]));
-      // expect(checkMetadata(metadata, "0x1", addressToId(addresses[1]), 0)).to.equal(true);
+    it("Should check HexHeads claim", async function () {
+      await(await hho.mint("0x0")).wait();
+      expect ((await hh.ownerOf(addressToId(addresses[0]))).toLowerCase()).to.equal(addresses[0])
+
+      await expect(hho.connect(signers[1]).mint("0x0")).to.be.revertedWith("NAME_IS_ALREADY_CLAIMED")
+
+      await hho.connect(signers[1]).mint("0x1")
+      expect ((await hh.ownerOf(addressToId(addresses[1]))).toLowerCase()).to.equal(addresses[1])
+
+      await expect(hho.connect(signers[1]).mint("0x2")).to.be.revertedWith("ALREADY_MINTED")
+    });
+
+    it("Should check HexHeads metadata", async function () {
+      let uri = await hh.tokenURI(addressToId(addresses[0]));
+      expect(checkMetadata(uri, "0x0", addressToId(addresses[0]), 0)).to.be.true;
+
+      uri = await hh.tokenURI(addressToId(addresses[1]));
+      expect(checkMetadata(uri, "0x1", addressToId(addresses[1]), 0)).to.be.true;
+
+      // Non-minted tokens
+      uri = await hh.tokenURI(addressToId(addresses[2]));
+      expect(checkMetadata(uri, "HexHead", addressToId(addresses[2]), 0)).to.be.true;
+
+      uri = await hhp.tokenURI(addressToId(addresses[0]));
+      expect(checkMetadata(uri, "0x0", addressToId(addresses[0]), 0)).to.be.true;
     });
 
   });

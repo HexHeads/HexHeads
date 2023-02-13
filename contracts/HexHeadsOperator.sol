@@ -50,7 +50,7 @@ contract HexHeadsOperator is Owned {
     //// PUBLIC ////
     function mint(
         string memory name
-    ) public {
+    ) external {
         uint256 id = _addressToId(msg.sender);
         if (_isFoil(id)) {
             hexHeadsPrime.mint(msg.sender, id, foilMintLevel);
@@ -63,13 +63,22 @@ contract HexHeadsOperator is Owned {
     function upgrade(
         uint256 id,
         uint256 level
-    ) public {
+    ) external {
         hexHeadsUpgrade.burn(msg.sender, level);
         if(hexHeadsPrime.ownerOf(id) == msg.sender) {
             hexHeadsPrime.upgrade(id, level);
         } else {
             hexHeads.burn(msg.sender, id);
             hexHeadsPrime.mint(msg.sender, id, level);
+        }
+    }
+
+    function rename(
+        uint256 id,
+        string calldata name
+    ) external {
+        if(hexHeads.ownerOf(id) == msg.sender || hexHeadsPrime.ownerOf(id) == msg.sender) {
+            nameRegistry.rename(id, name);
         }
     }
 

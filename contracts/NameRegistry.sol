@@ -33,7 +33,6 @@ contract NameRegistry is Owned {
         uint256 id,
         string memory name_
     ) external onlyOperator {
-        require(msg.sender == address(hexHeads) || msg.sender == hexHeads.ownerOf(id), "NOT_THE_OWNER_OF_HEXHEAD");
         require(keccak256(abi.encodePacked(name_)) != keccak256(abi.encodePacked("HexHead")), "NAME_IS_NOT_AVAILABLE");
         // TODO name length
         if(bytes(name_).length != 0) {

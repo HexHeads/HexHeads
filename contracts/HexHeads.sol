@@ -65,7 +65,7 @@ contract HexHeads is ERC721, Owned {
         uint256 id
     ) external onlyOperator {
         require(!burnt[id], "ALREADY_BURNED");
-        _mint(msg.sender, id);
+        _mint(to, id);
     }
 
     function burn(
