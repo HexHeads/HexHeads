@@ -53,6 +53,11 @@ contract HexHeads is ERC721, Owned {
         interfaceId == 0x5b5e139f; // ERC165 Interface ID for ERC721Metadata
     }
 
+    function ownerOf(uint256 id) public view override returns (address) {
+        require(id <= maxSupply, "INVALID_ID");
+        return _ownerOf[id];
+    }
+
     function tokenURI(uint256 id) public view override returns (string memory) {
         require(id <= maxSupply, "INVALID_ID");
         return metadataProvider.tokenURI(id, 0);

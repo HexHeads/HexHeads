@@ -4,10 +4,6 @@ const chai = require("chai");
 chai.use(solidity);
 const { expect } = require("chai");
 
-function idToAddress(id) {
-  return "0x"+BigInt(id).toString(16).padStart(40, "0").toLowerCase()
-}
-
 function addressToId(address) {
   return BigInt(address).toString()
 }
@@ -102,19 +98,19 @@ describe("HexHeads", function () {
     //   console.log(await hhm2._addressToTraits("0xA105440e9B0C5A5420954746A9d98c9F7C6580F8"))
     // })
 
-    it("Should check HexHeads claim", async function () {
+    it("Operator: Should check HexHeads claim", async function () {
       await(await hho.mint("0x0")).wait();
       expect ((await hh.ownerOf(addressToId(addresses[0]))).toLowerCase()).to.equal(addresses[0])
 
       await expect(hho.connect(signers[1]).mint("0x0")).to.be.revertedWith("NAME_IS_ALREADY_CLAIMED")
 
-      await hho.connect(signers[1]).mint("0x1")
-      expect ((await hh.ownerOf(addressToId(addresses[1]))).toLowerCase()).to.equal(addresses[1])
+      await hho.connect(signers[1]).mint("0x1");
+      expect ((await hh.ownerOf(addressToId(addresses[1]))).toLowerCase()).to.equal(addresses[1]);
 
-      await expect(hho.connect(signers[1]).mint("0x2")).to.be.revertedWith("ALREADY_MINTED")
+      await expect(hho.connect(signers[1]).mint("0x2")).to.be.revertedWith("ALREADY_MINTED");
     });
 
-    it("Should check HexHeads metadata", async function () {
+    it("HexHeads: Should check HexHeads metadata", async function () {
       let uri = await hh.tokenURI(addressToId(addresses[0]));
       expect(checkMetadata(uri, "0x0", addressToId(addresses[0]), 0)).to.be.true;
 
@@ -127,6 +123,37 @@ describe("HexHeads", function () {
 
       uri = await hhp.tokenURI(addressToId(addresses[0]));
       expect(checkMetadata(uri, "0x0", addressToId(addresses[0]), 0)).to.be.true;
+    });
+
+    it("Operator: Should check renaming", async function () {
+      await expect(hho.rename(addresses[0], "0x1")).to.be.revertedWith("NAME_IS_ALREADY_CLAIMED");
+      await (await (hho.rename(addresses[0], "0x2"))).wait();
+      let uri = await hhp.tokenURI(addresses[0]);
+      expect(checkMetadata(uri, "0x2", addresses[0], 0)).to.be.true;
+    });
+
+    it("Should check Upgrades mint", async function () {
+      const priceStep = await hhu.priceStep();
+
+      // Mint by Owner
+      let price = await hhu.price();
+      await (await hhu.mint(addresses[0], 2)).wait();
+      expect(await hhu.price()).to.equal(price);
+      expect(await hhu.balanceOf(addresses[0], 1)).to.equal(2);
+
+      price = await hhu.price();
+      await (await hhu.connect(signers[1]).mint(addresses[1], 3, {value: price.mul(3)})).wait();
+      expect(await hhu.balanceOf(addresses[1], 1)).to.equal(3);
+      expect(await hhu.price()).to.equal(price.add(priceStep));
+
+      await expect(hhu.connect(signers[1]).mint(addresses[1], 1, {value: price})).to.be.revertedWith("INSUFFICIENT_ETH");
+    });
+
+    it("Should check Upgrades", async function () {
+      await(await hho.upgrade(addresses[0], 2)).wait();
+      expect(await hhu.balanceOf(addresses[0], 1)).to.equal(0);
+      expect(await hh.balanceOf(addresses[0])).to.equal(0);
+      expect(await hhp.balanceOf(addresses[0])).to.equal(1);
     });
 
   });

@@ -64,6 +64,7 @@ contract HexHeadsOperator is Owned {
         uint256 id,
         uint256 level
     ) external {
+
         hexHeadsUpgrade.burn(msg.sender, level);
         if(hexHeadsPrime.ownerOf(id) == msg.sender) {
             hexHeadsPrime.upgrade(id, level);
